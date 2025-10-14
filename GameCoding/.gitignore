@@ -27,9 +27,3 @@ x86/
 *.tlog
 *.log
 *.recipe
-
-# Executables & libraries (no binary tracking)
-*.exe
-*.dll
-*.lib
-*.exp
