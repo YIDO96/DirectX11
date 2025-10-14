@@ -24,6 +24,14 @@ private:
 	void SetViewport();						// 뷰포트 설정
 
 private:
+	void CreateGeometry();				// 기하학적 도형 생성
+	void CreateInputLayout();			// 정점 레이아웃 생성
+	void CreateVS();
+	void CreatePS();
+
+	void LoadShaderFromFile(const wstring& path, const string& name, const string& version, ComPtr<ID3DBlob>& blob);
+
+private:
 	HWND _hwnd;					// 윈도우 핸들
 	uint32 _width = 0;			// 윈도우 창 크기
 	uint32 _height = 0;			// 윈도우 창 크기
@@ -40,5 +48,23 @@ private:
 	// Misc
 	D3D11_VIEWPORT _viewport = { 0 };
 	float _clearColor[4] = { 0.f, 0.f, 0.f, 0.f };
+
+private:
+	// Geometry
+	vector<Vertex> _vertices;
+	ComPtr<ID3D11Buffer> _vertexBuffer = nullptr;
+	ComPtr<ID3D11InputLayout> _inputLayout = nullptr;
+
+	// VS
+	ComPtr<ID3D11VertexShader> _vertexShader = nullptr;
+	ComPtr<ID3DBlob> _vsBlob = nullptr;
+
+	// PS
+	ComPtr<ID3D11PixelShader> _pixelShader = nullptr;
+	ComPtr<ID3DBlob> _psBlob = nullptr;
+
+
+	// [CPU<->RAM]  [GPU<->VRAM]
+
 };
 
