@@ -1,0 +1,35 @@
+# Visual Studio / C++ / DirectX11 Gitignore
+
+# Visual Studio cache
+.vs/
+*.suo
+*.user
+*.db
+*.cache
+*.ipch
+
+# Build output folders
+[Bb]in/
+[Bb]uild/
+[Bb]inaries/
+[Oo]bj/
+x64/
+x86/
+[Dd]ebug/
+[Rr]elease/
+
+# Individual build artifacts
+*.obj
+*.pdb
+*.ilk
+*.pch
+*.idb
+*.tlog
+*.log
+*.recipe
+
+# Executables & libraries (no binary tracking)
+*.exe
+*.dll
+*.lib
+*.exp
