@@ -25,13 +25,27 @@ void Game::Init(HWND hwnd)
 	CreateInputLayout();
 	CreatePS();				// PS 로드
 
+	CreateRasterizerState();
+	CreateSamplerState();
+	CreateBlendState();
+
 	CreateSRV();
+	CreateConstantBuffer();
 }
 
 void Game::Update()
 {
-	// 매 프레임 게임 로직 업데이트
+	//_transformData.offset.x = 0.3f;
+	//_transformData.offset.y = 0.3f;
 
+	// 매 프레임 게임 로직 업데이트
+	D3D11_MAPPED_SUBRESOURCE subResource;
+	ZeroMemory(&subResource, sizeof(subResource));
+
+	_deviceContext->Map(_constantBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0 , &subResource);
+	::memcpy(subResource.pData, &_transformData, sizeof(_transformData));
+
+	_deviceContext->Unmap(_constantBuffer.Get(), 0);
 }
 
 void Game::Render()
@@ -53,15 +67,21 @@ void Game::Render()
 
 		// VS
 		_deviceContext->VSSetShader(_vertexShader.Get(), nullptr, 0);
+		_deviceContext->VSSetConstantBuffers(0, 1, _constantBuffer.GetAddressOf());
 
 		// RS
+		_deviceContext->RSSetState(_rasterizerState.Get());
 
 		// PS
 		_deviceContext->PSSetShader(_pixelShader.Get(), nullptr, 0);
 		_deviceContext->PSSetShaderResources(0, 1, _shaderResourceView.GetAddressOf());
 		_deviceContext->PSSetShaderResources(1, 1, _shaderResourceView2.GetAddressOf());
+		_deviceContext->PSSetSamplers(0, 1, _samplerState.GetAddressOf());
+
 
 		// OM
+		_deviceContext->OMSetBlendState(_blendState.Get(), nullptr, 0xFFFFFFFF);
+
 
 		//_deviceContext->Draw(_vertices.size(), 0);
 		_deviceContext->DrawIndexed(_indices.size(), 0, 0);
@@ -226,7 +246,6 @@ void Game::CreateGeometry()
 		CHECK(hr);
 	}
 }
-
 void Game::CreateInputLayout()
 {
 	D3D11_INPUT_ELEMENT_DESC layout[] =
@@ -244,7 +263,6 @@ void Game::CreateInputLayout()
 	_device->CreateInputLayout(layout, count, _vsBlob->GetBufferPointer(), _vsBlob->GetBufferSize(),
 		_inputLayout.GetAddressOf());
 }
-
 void Game::CreateVS()
 {
 	// 쉐이더를 로드해서 _vsBlob에 담고
@@ -255,7 +273,6 @@ void Game::CreateVS()
 		nullptr, _vertexShader.GetAddressOf());
 	CHECK(hr);
 }
-
 void Game::CreatePS()
 {
 	// 쉐이더를 로드해서 _psBlob에 담고
@@ -265,6 +282,61 @@ void Game::CreatePS()
 	HRESULT hr = _device->CreatePixelShader(_psBlob->GetBufferPointer(), _psBlob->GetBufferSize(),
 		nullptr, _pixelShader.GetAddressOf());
 	CHECK(hr);
+}
+void Game::CreateRasterizerState()
+{
+	D3D11_RASTERIZER_DESC desc;
+	ZeroMemory(&desc, sizeof(desc));
+	desc.FillMode = D3D11_FILL_SOLID; // 실선
+	desc.CullMode = D3D11_CULL_BACK; // 뒷면 컬링
+	desc.FrontCounterClockwise = false; // 시계방향이 앞면
+
+
+	HRESULT hr = _device->CreateRasterizerState(&desc, _rasterizerState.GetAddressOf());
+	CHECK(hr);
+}
+
+void Game::CreateSamplerState()
+{
+	D3D11_SAMPLER_DESC desc;
+	ZeroMemory(&desc, sizeof(desc));
+	desc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;	// U축 경계처리
+	desc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;	// V축 경계처리
+	desc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;	// W축 경계처리
+	desc.BorderColor[0] = 1;
+	desc.BorderColor[1] = 0;
+	desc.BorderColor[2] = 0;
+	desc.BorderColor[3] = 1;
+	desc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
+	desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR; // 선형 필터링
+	desc.MaxAnisotropy = 16;	// 이방성 필터링 샘플 개수
+	desc.MaxLOD = FLT_MAX;
+	desc.MinLOD = FLT_MIN;
+	desc.MipLODBias = 0.0f;
+
+
+	_device->CreateSamplerState(&desc, _samplerState.GetAddressOf());
+}
+
+void Game::CreateBlendState()
+{
+	D3D11_BLEND_DESC desc;
+	ZeroMemory(&desc, sizeof(desc));
+	desc.AlphaToCoverageEnable = false;		// 알파 투 커버리지 비활성화
+	desc.IndependentBlendEnable = false;	// 독립 블렌딩 비활성화
+
+	desc.RenderTarget[0].BlendEnable = true; // 블렌딩 비활성화
+	desc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA; // SrcFactor
+	desc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA; // DstFactor
+	desc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD; // 합산
+	desc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+	desc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+	desc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+	desc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL; // RGBA 모두 쓰기
+
+
+
+	_device->CreateBlendState(&desc, _blendState.GetAddressOf());
 }
 
 void Game::CreateSRV()
@@ -278,6 +350,19 @@ void Game::CreateSRV()
 	CHECK(hr);
 
 
+}
+void Game::CreateConstantBuffer()
+{
+	D3D11_BUFFER_DESC desc;
+	ZeroMemory(&desc, sizeof(desc));
+
+	desc.Usage = D3D11_USAGE_DYNAMIC; 				// CPU_Write + GPU_Read
+	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;	// 상수버퍼 용도
+	desc.ByteWidth = sizeof(TransformData);
+	desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;	// CPU가 쓰기 가능
+
+	HRESULT hr = _device->CreateBuffer(&desc, nullptr, _constantBuffer.GetAddressOf());
+	CHECK(hr);
 }
 
 void Game::LoadShaderFromFile(const wstring& path, const string& name, 
