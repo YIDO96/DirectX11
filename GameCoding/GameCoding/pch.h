@@ -6,6 +6,7 @@
 #include "Struct.h"
 
 // STL
+#include <iostream>
 #include <vector>
 #include <string>
 #include <list>
