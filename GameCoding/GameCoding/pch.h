@@ -43,3 +43,7 @@ using namespace Microsoft::WRL;
 
 // Engine
 #include "Graphics.h"
+// Engine - Pipelines - InputAssembler
+#include "VertexBuffer.h"
+#include "IndexBuffer.h"
+#include "InputLayout.h"

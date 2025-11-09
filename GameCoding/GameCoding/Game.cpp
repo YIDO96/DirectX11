@@ -15,8 +15,9 @@ void Game::Init(HWND hwnd)
 
 	//_graphics = make_shared<Graphics>(hwnd);
 	_graphics = new Graphics(hwnd);
-
-
+	_vertexBuffer = new VertexBuffer(_graphics->GetDevice());
+	_indexBuffer = new IndexBuffer(_graphics->GetDevice());
+	_inputLayout = new InputLayout(_graphics->GetDevice());
 
 	CreateGeometry();
 	CreateVS();				// VS 로드
@@ -71,10 +72,9 @@ void Game::Render()
 		auto deviceContext = _graphics->GetDeviceContext();
 
 		// IA
-		deviceContext->IASetVertexBuffers(0, 1, _vertexBuffer.GetAddressOf(),
-			&stride, &offset);
-		deviceContext->IASetIndexBuffer(_indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
-		deviceContext->IASetInputLayout(_inputLayout.Get());
+		deviceContext->IASetVertexBuffers(0, 1, _vertexBuffer->GetComPtr().GetAddressOf(), &stride, &offset);
+		deviceContext->IASetIndexBuffer(_indexBuffer->GetComPtr().Get(), DXGI_FORMAT_R32_UINT, 0);
+		deviceContext->IASetInputLayout(_inputLayout->GetComPtr().Get());
 		deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		// VS
@@ -132,19 +132,18 @@ void Game::CreateGeometry()
 
 	// VertexBuffer
 	{
-		D3D11_BUFFER_DESC desc;
-		ZeroMemory(&desc, sizeof(desc));
-		desc.Usage = D3D11_USAGE_IMMUTABLE;				// GPU 전용 버퍼
-		desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;		// VertexBuffer 용도
-		desc.ByteWidth = (uint32)(sizeof(Vertex) * _vertices.size());
+		//D3D11_BUFFER_DESC desc;
+		//ZeroMemory(&desc, sizeof(desc));
+		//desc.Usage = D3D11_USAGE_IMMUTABLE;				// GPU 전용 버퍼
+		//desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;		// VertexBuffer 용도
+		//desc.ByteWidth = (uint32)(sizeof(Vertex) * _vertices.size());
+		//D3D11_SUBRESOURCE_DATA data;
+		//ZeroMemory(&data, sizeof(data));
+		//data.pSysMem = _vertices.data(); // == &_vertices[0]	// 초기 데이터 전달
+		//HRESULT hr = _graphics->GetDevice()->CreateBuffer(&desc, &data, _vertexBuffer.GetAddressOf());
+		//CHECK(hr);
 
-		D3D11_SUBRESOURCE_DATA data;
-		ZeroMemory(&data, sizeof(data));
-		data.pSysMem = _vertices.data(); // == &_vertices[0]	// 초기 데이터 전달
-
-
-		HRESULT hr = _graphics->GetDevice()->CreateBuffer(&desc, &data, _vertexBuffer.GetAddressOf());
-		CHECK(hr);
+		_vertexBuffer->Create(_vertices);
 	}
 
 	// Index
@@ -155,24 +154,23 @@ void Game::CreateGeometry()
 
 	// IndexBuffer
 	{
-		D3D11_BUFFER_DESC desc;
-		ZeroMemory(&desc, sizeof(desc));
-		desc.Usage = D3D11_USAGE_IMMUTABLE;				// GPU 전용 버퍼
-		desc.BindFlags = D3D11_BIND_INDEX_BUFFER;		// IndexBuffer 용도
-		desc.ByteWidth = (uint32)(sizeof(uint32) * _indices.size());
+		_indexBuffer->Create(_indices);
 
-		D3D11_SUBRESOURCE_DATA data;
-		ZeroMemory(&data, sizeof(data));
-		data.pSysMem = _indices.data(); // == &_vertices[0]	// 초기 데이터 전달
-
-
-		HRESULT hr = _graphics->GetDevice()->CreateBuffer(&desc, &data, _indexBuffer.GetAddressOf());
-		CHECK(hr);
+		//D3D11_BUFFER_DESC desc;
+		//ZeroMemory(&desc, sizeof(desc));
+		//desc.Usage = D3D11_USAGE_IMMUTABLE;				// GPU 전용 버퍼
+		//desc.BindFlags = D3D11_BIND_INDEX_BUFFER;		// IndexBuffer 용도
+		//desc.ByteWidth = (uint32)(sizeof(uint32) * _indices.size());
+		//D3D11_SUBRESOURCE_DATA data;
+		//ZeroMemory(&data, sizeof(data));
+		//data.pSysMem = _indices.data(); // == &_vertices[0]	// 초기 데이터 전달
+		//HRESULT hr = _graphics->GetDevice()->CreateBuffer(&desc, &data, _indexBuffer.GetAddressOf());
+		//CHECK(hr);
 	}
 }
 void Game::CreateInputLayout()
 {
-	D3D11_INPUT_ELEMENT_DESC layout[] =
+	vector<D3D11_INPUT_ELEMENT_DESC> layout =
 	{
 		// 의미, 인덱스, 포맷, 입력슬롯, 오프셋, 데이터종류, 인스턴스 데이터 스텝률
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
@@ -182,10 +180,12 @@ void Game::CreateInputLayout()
 
 	};
 
-	const int32 count = sizeof(layout) / sizeof(D3D11_INPUT_ELEMENT_DESC);
+	_inputLayout->Create(layout, _vsBlob);
 
-	_graphics->GetDevice()->CreateInputLayout(layout, count, _vsBlob->GetBufferPointer(), _vsBlob->GetBufferSize(),
-		_inputLayout.GetAddressOf());
+	//const int32 count = sizeof(layout) / sizeof(D3D11_INPUT_ELEMENT_DESC);
+
+	//_graphics->GetDevice()->CreateInputLayout(layout, count, _vsBlob->GetBufferPointer(), _vsBlob->GetBufferSize(),
+	//	_inputLayout.GetAddressOf());
 }
 void Game::CreateVS()
 {
