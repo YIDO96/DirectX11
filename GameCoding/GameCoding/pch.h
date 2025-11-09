@@ -48,3 +48,7 @@ using namespace Microsoft::WRL;
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
 #include "InputLayout.h"
+// Engine - Pipelines - Geometry
+#include "Geometry.h"
+#include "GeometryHelper.h"
+#include "VertexData.h"
