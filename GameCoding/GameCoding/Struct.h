@@ -14,6 +14,11 @@ struct Vertex
 
 struct TransformData
 {
-	Vec3 offset;
-	float dummy;
+	//Vec3 offset;
+	//float dummy;
+
+	// Matrix::Identity = 항등행렬
+	Matrix matWorld = Matrix::Identity;
+	Matrix matView = Matrix::Identity;
+	Matrix matProjection = Matrix::Identity;
 };

@@ -18,14 +18,22 @@ struct VS_OUTPUT
 
 cbuffer TransformData : register(b0)
 {
-    float4 offset;
+    row_major matrix matWorld;
+    row_major matrix matView;
+    row_major matrix matProjection;
 }
 
 // IA -> VS(정점 작업) -> RS(보간 작업) -> PS -> OM
 VS_OUTPUT VS(VS_INPUT input)
 {
     VS_OUTPUT output;
-    output.position = input.position + offset;
+    
+    float4 position = mul(input.position, matWorld); // 월드 좌표계로 변환
+    position = mul(position, matView); // 뷰 좌표계로 변환
+    position = mul(position, matProjection); // 투영 좌표계로 변환
+    
+    
+    output.position = position;
     //output.color = input.color;
     output.uv = input.uv;
     

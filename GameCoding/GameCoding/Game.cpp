@@ -4,10 +4,10 @@
 Game::Game()
 {
 }
-
 Game::~Game()
 {
 }
+
 
 void Game::Init(HWND hwnd)
 {
@@ -25,9 +25,9 @@ void Game::Init(HWND hwnd)
 	CreateInputLayout();
 	CreatePS();				// PS 로드
 
-	CreateRasterizerState();
+	//CreateRasterizerState();
 	CreateSamplerState();
-	CreateBlendState();
+	//CreateBlendState();
 
 	CreateSRV();
 	CreateConstantBuffer();
@@ -35,8 +35,18 @@ void Game::Init(HWND hwnd)
 
 void Game::Update()
 {
-	//_transformData.offset.x = 0.3f;
-	//_transformData.offset.y = 0.3f;
+	//Scale Rotation Translation
+
+	Matrix matScale = Matrix::CreateScale(_localScale);
+	Matrix matRotation = Matrix::CreateRotationX(_localRotation.x);
+	matRotation *= Matrix::CreateRotationY(_localRotation.y);
+	matRotation *= Matrix::CreateRotationZ(_localRotation.z);
+	Matrix matTranslation = Matrix::CreateTranslation(_localPosition);
+
+	Matrix matWorld = matScale * matRotation * matTranslation;
+	_transformData.matWorld = matWorld;
+
+
 
 	// 매 프레임 게임 로직 업데이트
 	D3D11_MAPPED_SUBRESOURCE subResource;
@@ -89,7 +99,6 @@ void Game::Render()
 
 	RenderEnd();
 }
-
 void Game::RenderBegin()
 {
 	// 1) 출력 병합 단계(OM)에 렌더 타깃을 묶는다. (DSV 없음)
@@ -99,7 +108,6 @@ void Game::RenderBegin()
 	// 3) 레스터라이저 단계(RS)에 사용할 뷰포트 설정
 	_deviceContext->RSSetViewports(1, &_viewport);
 }
-
 void Game::RenderEnd()
 {
 	// 더블 버퍼링 : 후면 버퍼에 그린 내용을 화면(전면)으로 표시
@@ -107,6 +115,7 @@ void Game::RenderEnd()
 	// 0으로 하면 즉시 표시 (티어링 발생 가능)
 	_swapChain->Present(1, 0);
 }
+
 
 void Game::CreateDeviceAndSwapChain()
 {
@@ -155,7 +164,6 @@ void Game::CreateDeviceAndSwapChain()
 
 
 }
-
 void Game::CreateRenderTargertView()
 {
 	HRESULT hr;
@@ -171,7 +179,6 @@ void Game::CreateRenderTargertView()
 	_device->CreateRenderTargetView(backBuffer.Get(), nullptr, _renderTargetView.GetAddressOf());
 	CHECK(hr);
 }
-
 void Game::SetViewport()
 {
 	_viewport.TopLeftX = 0.f;
@@ -181,7 +188,6 @@ void Game::SetViewport()
 	_viewport.MinDepth = 0.f;
 	_viewport.MaxDepth = 1.f;
 }
-
 void Game::CreateGeometry()
 {
 	// VertexData
@@ -290,12 +296,15 @@ void Game::CreateRasterizerState()
 	desc.FillMode = D3D11_FILL_SOLID; // 실선
 	desc.CullMode = D3D11_CULL_BACK; // 뒷면 컬링
 	desc.FrontCounterClockwise = false; // 시계방향이 앞면
+	desc.DepthClipEnable = false; // 깊이버퍼 범위 밖 절단 활성화
+	desc.ScissorEnable = false; // 시저링 비활성화
+	desc.MultisampleEnable = false; // 멀티샘플링 비활성화
+	desc.AntialiasedLineEnable = false; // 앤티앨리어싱 비활성화
 
 
 	HRESULT hr = _device->CreateRasterizerState(&desc, _rasterizerState.GetAddressOf());
 	CHECK(hr);
 }
-
 void Game::CreateSamplerState()
 {
 	D3D11_SAMPLER_DESC desc;
@@ -303,7 +312,7 @@ void Game::CreateSamplerState()
 	desc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;	// U축 경계처리
 	desc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;	// V축 경계처리
 	desc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;	// W축 경계처리
-	desc.BorderColor[0] = 1;
+	desc.BorderColor[0] = 1;						// 경계색 : 빨강
 	desc.BorderColor[1] = 0;
 	desc.BorderColor[2] = 0;
 	desc.BorderColor[3] = 1;
@@ -317,7 +326,6 @@ void Game::CreateSamplerState()
 
 	_device->CreateSamplerState(&desc, _samplerState.GetAddressOf());
 }
-
 void Game::CreateBlendState()
 {
 	D3D11_BLEND_DESC desc;
@@ -338,7 +346,6 @@ void Game::CreateBlendState()
 
 	_device->CreateBlendState(&desc, _blendState.GetAddressOf());
 }
-
 void Game::CreateSRV()
 {
 	DirectX::TexMetadata md;
@@ -364,6 +371,7 @@ void Game::CreateConstantBuffer()
 	HRESULT hr = _device->CreateBuffer(&desc, nullptr, _constantBuffer.GetAddressOf());
 	CHECK(hr);
 }
+
 
 void Game::LoadShaderFromFile(const wstring& path, const string& name, 
 	const string& version, ComPtr<ID3DBlob>& blob)
