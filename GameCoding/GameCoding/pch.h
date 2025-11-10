@@ -63,3 +63,6 @@ using namespace Microsoft::WRL;
 #include "BlendState.h"
 
 #include "Pipeline.h"
+
+// Engine - Game
+#include "GameObject.h"
