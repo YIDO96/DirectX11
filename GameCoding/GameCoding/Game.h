@@ -33,11 +33,7 @@ private:
 private:
 	HWND _hwnd;					// 윈도우 핸들
 
-	//shared_ptr<Graphics> _graphics;
 	Graphics* _graphics;
-
-	//uint32 _width = 0;			// 윈도우 창 크기
-	//uint32 _height = 0;			// 윈도우 창 크기
 
 private:
 //	// Device & SwapChain
@@ -55,17 +51,11 @@ private:
 private:
 	// Geometry
 	shared_ptr<Geometry<VertexTextureData>> _geometry;
-	//vector<Vertex> _vertices;
-	//vector<uint32> _indices;
 
 	// InputAssembler
 	shared_ptr<VertexBuffer> _vertexBuffer;
 	shared_ptr < IndexBuffer> _indexBuffer;
 	shared_ptr < InputLayout> _inputLayout;
-
-	//ComPtr<ID3D11Buffer> _vertexBuffer1 = nullptr;
-	//ComPtr<ID3D11Buffer> _indexBuffer = nullptr;
-	//ComPtr<ID3D11InputLayout> _inputLayout = nullptr;
 
 	// VS
 	ComPtr<ID3D11VertexShader> _vertexShader = nullptr;

@@ -97,7 +97,6 @@ void Game::Render()
 		deviceContext->OMSetBlendState(_blendState.Get(), nullptr, 0xFFFFFFFF);
 
 
-		//_deviceContext->Draw(_vertices.size(), 0);
 		deviceContext->DrawIndexed(_geometry->GetIndexCount(), 0, 0);
 	}
 
@@ -112,62 +111,20 @@ void Game::CreateGeometry()
 {
 	// VertexData
 	GeometryHelper::CreateRectangle(_geometry);
-	{
-		
-
-		//_vertices.resize(4);	
-		//_vertices[0].position = Vec3(-0.5f, -0.5f, 0.f);
-		//_vertices[0].uv = Vec2(0.f, 1.f);
-		////_vertices[0].color = Color(1.f, 0.f, 0.f, 1.f);
-		//_vertices[1].position = Vec3(-0.5f, 0.5f, 0.f);
-		//_vertices[1].uv = Vec2(0.f, 0.f);
-		////_vertices[1].color = Color(1.f, 0.f, 0.f, 1.f);
-		//_vertices[2].position = Vec3(0.5f, -0.5f, 0.f);
-		//_vertices[2].uv = Vec2(1.f, 1.f);
-		////_vertices[2].color = Color(1.f, 0.f, 0.f, 1.f);
-		//_vertices[3].position = Vec3(0.5f, 0.5f, 0.f);
-		//_vertices[3].uv = Vec2(1.f, 0.f);
-		////_vertices[3].color = Color(1.f, 0.f, 0.f, 1.f);
-	}
 
 	// VertexBuffer
 	{
-		//D3D11_BUFFER_DESC desc;
-		//ZeroMemory(&desc, sizeof(desc));
-		//desc.Usage = D3D11_USAGE_IMMUTABLE;				// GPU 전용 버퍼
-		//desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;		// VertexBuffer 용도
-		//desc.ByteWidth = (uint32)(sizeof(Vertex) * _vertices.size());
-		//D3D11_SUBRESOURCE_DATA data;
-		//ZeroMemory(&data, sizeof(data));
-		//data.pSysMem = _vertices.data(); // == &_vertices[0]	// 초기 데이터 전달
-		//HRESULT hr = _graphics->GetDevice()->CreateBuffer(&desc, &data, _vertexBuffer.GetAddressOf());
-		//CHECK(hr);
 		_vertexBuffer->Create(_geometry->GetVertices());
 	}
 
 	// IndexBuffer
 	{
 		_indexBuffer->Create(_geometry->GetIndices());
-
-		//D3D11_BUFFER_DESC desc;
-		//ZeroMemory(&desc, sizeof(desc));
-		//desc.Usage = D3D11_USAGE_IMMUTABLE;				// GPU 전용 버퍼
-		//desc.BindFlags = D3D11_BIND_INDEX_BUFFER;		// IndexBuffer 용도
-		//desc.ByteWidth = (uint32)(sizeof(uint32) * _indices.size());
-		//D3D11_SUBRESOURCE_DATA data;
-		//ZeroMemory(&data, sizeof(data));
-		//data.pSysMem = _indices.data(); // == &_vertices[0]	// 초기 데이터 전달
-		//HRESULT hr = _graphics->GetDevice()->CreateBuffer(&desc, &data, _indexBuffer.GetAddressOf());
-		//CHECK(hr);
 	}
 }
 void Game::CreateInputLayout()
 {
 	_inputLayout->Create(VertexTextureData::descs, _vsBlob);
-
-	//const int32 count = sizeof(layout) / sizeof(D3D11_INPUT_ELEMENT_DESC);
-	//_graphics->GetDevice()->CreateInputLayout(layout, count, _vsBlob->GetBufferPointer(), _vsBlob->GetBufferSize(),
-	//	_inputLayout.GetAddressOf());
 }
 void Game::CreateVS()
 {
