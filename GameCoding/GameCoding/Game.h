@@ -13,22 +13,12 @@ public:
 	void Update();				// 매 프레임 갱신 로직 (입력, 게임상태 업데이트 등)	
 	void Render();				// 매 프레임 렌더링
 
-private:
 
 private:
-	void CreateGeometry();				// 기하학적 도형 생성
-	void CreateInputLayout();			// 정점 레이아웃 생성
-	void CreateVS();
-	void CreatePS();
-
 	void CreateRasterizerState();
 	void CreateSamplerState();
 	void CreateBlendState();
-	void CreateSRV();
 
-	void CreateConstantBuffer();
-
-	void LoadShaderFromFile(const wstring& path, const string& name, const string& version, ComPtr<ID3DBlob>& blob);
 
 private:
 	HWND _hwnd;					// 윈도우 핸들
@@ -54,23 +44,20 @@ private:
 
 	// InputAssembler
 	shared_ptr<VertexBuffer> _vertexBuffer;
-	shared_ptr < IndexBuffer> _indexBuffer;
-	shared_ptr < InputLayout> _inputLayout;
+	shared_ptr<IndexBuffer> _indexBuffer;
+	shared_ptr<InputLayout> _inputLayout;
 
 	// VS
-	ComPtr<ID3D11VertexShader> _vertexShader = nullptr;
-	ComPtr<ID3DBlob> _vsBlob = nullptr;
+	shared_ptr<VertexShader> _vertexShader;
 
 	// RAS
 	ComPtr<ID3D11RasterizerState> _rasterizerState = nullptr;
 
 	// PS
-	ComPtr<ID3D11PixelShader> _pixelShader = nullptr;
-	ComPtr<ID3DBlob> _psBlob = nullptr;
-
+	shared_ptr<PixelShader> _pixelShader;
+	
 	// SRV
-	ComPtr<ID3D11ShaderResourceView> _shaderResourceView = nullptr;
-	ComPtr<ID3D11ShaderResourceView> _shaderResourceView2 = nullptr;
+	shared_ptr<Texture> _texture1;
 
 	ComPtr<ID3D11SamplerState> _samplerState = nullptr;
 	ComPtr<ID3D11BlendState> _blendState = nullptr;
@@ -79,7 +66,7 @@ private:
 
 private:
 	TransformData _transformData;
-	ComPtr<ID3D11Buffer> _constantBuffer;
+	shared_ptr<ConstantBuffer<TransformData>> _constantBuffer;
 
 	Vec3 _localPosition = Vec3(0.f, 0.f, 0.f);
 	Vec3 _localRotation = Vec3(0.f, 0.f, 0.f);

@@ -19,19 +19,33 @@ void Game::Init(HWND hwnd)
 	_indexBuffer = make_shared<IndexBuffer>(_graphics->GetDevice());
 	_inputLayout = make_shared<InputLayout>(_graphics->GetDevice());
 	_geometry = make_shared<Geometry<VertexTextureData>>();
+	_vertexShader = make_shared<VertexShader>(_graphics->GetDevice());
+	_pixelShader = make_shared<PixelShader>(_graphics->GetDevice());
+	_constantBuffer = make_shared<ConstantBuffer<TransformData>>(_graphics->GetDevice(), _graphics->GetDeviceContext());
+
+	_texture1 = make_shared<Texture>(_graphics->GetDevice());
 
 
-	CreateGeometry();
-	CreateVS();				// VS 로드
-	CreateInputLayout();
-	CreatePS();				// PS 로드
+	{ // Create Geometry
+		// VertexData
+		GeometryHelper::CreateRectangle(_geometry);
+		// VertexBuffer
+		_vertexBuffer->Create(_geometry->GetVertices());
+		// IndexBuffer
+		_indexBuffer->Create(_geometry->GetIndices());
+	}
+
+	_vertexShader->Create(L"Default.hlsl", "VS", "vs_5_0");						// CreateVS
+	_inputLayout->Create(VertexTextureData::descs, _vertexShader->GetBlob());	// CreateInputLayout
+	_pixelShader->Create(L"Default.hlsl", "PS", "ps_5_0");						// CreatePS
 
 	CreateRasterizerState();
 	CreateSamplerState();
 	CreateBlendState();
 
-	CreateSRV();
-	CreateConstantBuffer();
+	_texture1->Create(L"Skeleton.png");											// CreateSRV)
+
+	_constantBuffer->Create();													// CreateConstantBuffer
 }
 
 void Game::Update()
@@ -49,16 +63,7 @@ void Game::Update()
 	_transformData.matWorld = matWorld;
 
 
-
-	// 매 프레임 게임 로직 업데이트
-	D3D11_MAPPED_SUBRESOURCE subResource;
-	ZeroMemory(&subResource, sizeof(subResource));
-
-
-	_graphics->GetDeviceContext()->Map(_constantBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &subResource);
-	::memcpy(subResource.pData, &_transformData, sizeof(_transformData));
-
-	_graphics->GetDeviceContext()->Unmap(_constantBuffer.Get(), 0);
+	_constantBuffer->CopyData(_transformData);
 }
 
 void Game::Render()
@@ -80,16 +85,16 @@ void Game::Render()
 		deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		// VS
-		deviceContext->VSSetShader(_vertexShader.Get(), nullptr, 0);
-		deviceContext->VSSetConstantBuffers(0, 1, _constantBuffer.GetAddressOf());
+		deviceContext->VSSetShader(_vertexShader->GetComPtr().Get(), nullptr, 0);
+		deviceContext->VSSetConstantBuffers(0, 1, _constantBuffer->GetComPtr().GetAddressOf());
 
 		// RS
 		deviceContext->RSSetState(_rasterizerState.Get());
 
 		// PS
-		deviceContext->PSSetShader(_pixelShader.Get(), nullptr, 0);
-		deviceContext->PSSetShaderResources(0, 1, _shaderResourceView.GetAddressOf());
-		deviceContext->PSSetShaderResources(1, 1, _shaderResourceView2.GetAddressOf());
+		deviceContext->PSSetShader(_pixelShader->GetComPtr().Get(), nullptr, 0);
+		deviceContext->PSSetShaderResources(0, 1, _texture1->GetComPtr().GetAddressOf());
+		//deviceContext->PSSetShaderResources(1, 1, _shaderResourceView2.GetAddressOf());
 		deviceContext->PSSetSamplers(0, 1, _samplerState.GetAddressOf());
 
 
@@ -107,45 +112,6 @@ void Game::Render()
 
 // Graphics
 
-void Game::CreateGeometry()
-{
-	// VertexData
-	GeometryHelper::CreateRectangle(_geometry);
-
-	// VertexBuffer
-	{
-		_vertexBuffer->Create(_geometry->GetVertices());
-	}
-
-	// IndexBuffer
-	{
-		_indexBuffer->Create(_geometry->GetIndices());
-	}
-}
-void Game::CreateInputLayout()
-{
-	_inputLayout->Create(VertexTextureData::descs, _vsBlob);
-}
-void Game::CreateVS()
-{
-	// 쉐이더를 로드해서 _vsBlob에 담고
-	LoadShaderFromFile(L"Default.hlsl", "VS", "vs_5_0", _vsBlob);
-
-	// Blob을 이용해 버퍼포인터, 버퍼사이즈를 이용해 _vertexShader를 생성
-	HRESULT hr = _graphics->GetDevice()->CreateVertexShader(_vsBlob->GetBufferPointer(), _vsBlob->GetBufferSize(),
-		nullptr, _vertexShader.GetAddressOf());
-	CHECK(hr);
-}
-void Game::CreatePS()
-{
-	// 쉐이더를 로드해서 _psBlob에 담고
-	LoadShaderFromFile(L"Default.hlsl", "PS", "ps_5_0", _psBlob);
-
-	// Blob을 이용해 버퍼포인터, 버퍼사이즈를 이용해 _pixelShader를 생성
-	HRESULT hr = _graphics->GetDevice()->CreatePixelShader(_psBlob->GetBufferPointer(), _psBlob->GetBufferSize(),
-		nullptr, _pixelShader.GetAddressOf());
-	CHECK(hr);
-}
 void Game::CreateRasterizerState()
 {
 	D3D11_RASTERIZER_DESC desc;
@@ -202,49 +168,4 @@ void Game::CreateBlendState()
 
 
 	_graphics->GetDevice()->CreateBlendState(&desc, _blendState.GetAddressOf());
-}
-void Game::CreateSRV()
-{
-	DirectX::TexMetadata md;
-	DirectX::ScratchImage img;
-	HRESULT hr = ::LoadFromWICFile(L"Skeleton.png", WIC_FLAGS_NONE, &md, img);
-	CHECK(hr);
-
-	hr = ::CreateShaderResourceView(_graphics->GetDevice().Get(), img.GetImages(), img.GetImageCount(), md, _shaderResourceView.GetAddressOf());
-	CHECK(hr);
-
-
-}
-void Game::CreateConstantBuffer()
-{
-	D3D11_BUFFER_DESC desc;
-	ZeroMemory(&desc, sizeof(desc));
-
-	desc.Usage = D3D11_USAGE_DYNAMIC; 				// CPU_Write + GPU_Read
-	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;	// 상수버퍼 용도
-	desc.ByteWidth = sizeof(TransformData);
-	desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;	// CPU가 쓰기 가능
-
-	HRESULT hr = _graphics->GetDevice()->CreateBuffer(&desc, nullptr, _constantBuffer.GetAddressOf());
-	CHECK(hr);
-}
-
-
-void Game::LoadShaderFromFile(const wstring& path, const string& name, 
-	const string& version, ComPtr<ID3DBlob>& blob)
-{
-	const uint32 compileFlag = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
-
-	HRESULT hr = ::D3DCompileFromFile(
-		path.c_str(),
-		nullptr,
-		D3D_COMPILE_STANDARD_FILE_INCLUDE,
-		name.c_str(),
-		version.c_str(),
-		compileFlag,
-		0,
-		blob.GetAddressOf(),
-		nullptr);
-
-	CHECK(hr);
 }
