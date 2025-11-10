@@ -44,6 +44,7 @@ using namespace Microsoft::WRL;
 
 // Engine
 #include "Graphics.h"
+
 // Engine - Pipelines - InputAssembler
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
@@ -56,3 +57,9 @@ using namespace Microsoft::WRL;
 #include "Shader.h"
 #include "ConstantBuffer.h"
 #include "Texture.h"
+
+#include "RasterizerState.h"
+#include "SamplerState.h"
+#include "BlendState.h"
+
+#include "Pipeline.h"

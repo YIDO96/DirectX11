@@ -15,16 +15,13 @@ public:
 
 
 private:
-	void CreateRasterizerState();
-	void CreateSamplerState();
-	void CreateBlendState();
 
 
 private:
 	HWND _hwnd;					// 윈도우 핸들
 
-	Graphics* _graphics;
-
+	shared_ptr<Graphics> _graphics;
+	shared_ptr<Pipeline> _pipeline;
 private:
 //	// Device & SwapChain
 //	ComPtr<ID3D11Device> _device = nullptr;					//	GPU 디바이스 (리로스 생성 추제)
@@ -51,7 +48,7 @@ private:
 	shared_ptr<VertexShader> _vertexShader;
 
 	// RAS
-	ComPtr<ID3D11RasterizerState> _rasterizerState = nullptr;
+	shared_ptr<RasterizerState> _rasterizerState;
 
 	// PS
 	shared_ptr<PixelShader> _pixelShader;
@@ -59,8 +56,8 @@ private:
 	// SRV
 	shared_ptr<Texture> _texture1;
 
-	ComPtr<ID3D11SamplerState> _samplerState = nullptr;
-	ComPtr<ID3D11BlendState> _blendState = nullptr;
+	shared_ptr<SamplerState> _samplerState;
+	shared_ptr<BlendState> _blendState;
 
 	// [CPU<->RAM]  [GPU<->VRAM]
 
