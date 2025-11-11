@@ -8,6 +8,7 @@
 // STL
 #include <iostream>
 #include <vector>
+#include <array>
 #include <string>
 #include <list>
 #include <map>
@@ -67,3 +68,4 @@ using namespace Microsoft::WRL;
 // Engine - Game
 #include "Transform.h"
 #include "GameObject.h"
+#include "Component.h"

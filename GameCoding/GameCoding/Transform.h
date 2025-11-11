@@ -3,11 +3,13 @@
 
 class Transform : public Component
 {
+	using Super = Component;
+
 public:
 	Transform();
 	~Transform();
 
-	void Init() override;
+	void Awake() override;
 	void Update() override;
 
 	void UpdateTransform();
@@ -27,6 +29,11 @@ public:
 	void SetRotation(const Vec3& worldRotation);
 	Vec3 GetPosition() { return _position; }
 	void SetPosition(const Vec3& worldPosition);
+
+
+	Vec3 GetRight() { return _matWorld.Right(); }
+	Vec3 GetUp() { return _matWorld.Up(); }
+	Vec3 GetLook() { return _matWorld.Backward(); }
 
 	Matrix GetWorldMatrix() { return _matWorld; }
 
@@ -53,10 +60,6 @@ private:
 	// x y z w
 	Vec3 _rotation;
 	Vec3 _position;
-
-	Vec3 _right;
-	Vec3 _up;
-	Vec3 _look;
 
 
 private:
