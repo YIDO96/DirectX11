@@ -94,6 +94,23 @@ void Transform::SetScale(const Vec3& worldScale)
 	}
 }
 
+void Transform::SetScale(const float scale)
+{
+	//if (HasParent())
+	//{
+	//	Vec3 parentScale = _parent->GetScale();
+	//	Vec3 scale = worldScale;
+	//	scale.x /= parentScale.x;
+	//	scale.y /= parentScale.y;
+	//	scale.z /= parentScale.z;
+	//	SetLocalScale(scale);
+	//}
+	//else
+	//{
+	//	SetLocalScale(worldScale);
+	//}
+}
+
 void Transform::SetRotation(const Vec3& worldRotation)
 {
 	if (HasParent())

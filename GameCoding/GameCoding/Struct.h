@@ -12,13 +12,13 @@
 //	Vec2 uv;
 //};
 
-struct TransformData
+struct CameraData
 {
-	//Vec3 offset;
-	//float dummy;
-
-	// Matrix::Identity = 항등행렬
-	Matrix matWorld = Matrix::Identity;
 	Matrix matView = Matrix::Identity;
 	Matrix matProjection = Matrix::Identity;
+};
+
+struct TransformData
+{
+	Matrix matWorld = Matrix::Identity;
 };

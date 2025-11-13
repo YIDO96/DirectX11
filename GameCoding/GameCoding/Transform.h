@@ -17,6 +17,8 @@ public:
 	// Local
 	Vec3 GetLocalScale() { return _localScale; }
 	void SetLocalScale(const Vec3& localScale) { _localScale = localScale; UpdateTransform(); }
+	void SetLocalScale(const float localScale) { _localScale.x *= localScale; _localScale.y *= localScale;
+													_localScale.z *= localScale; UpdateTransform();	}
 	Vec3 GetLocalRotation() { return _localRotation; }
 	void SetLocalRotation(const Vec3& localRotation) { _localRotation = localRotation; UpdateTransform(); }
 	Vec3 GetLocalPosition() { return _localPosition; }
@@ -25,6 +27,7 @@ public:
 	// World
 	Vec3 GetScale() { return _scale; }
 	void SetScale(const Vec3& worldScale);
+	void SetScale(const float scale);
 	Vec3 GetRotation() { return _rotation; }
 	void SetRotation(const Vec3& worldRotation);
 	Vec3 GetPosition() { return _position; }
