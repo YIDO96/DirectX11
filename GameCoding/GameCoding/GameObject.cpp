@@ -4,6 +4,7 @@
 #include "Transform.h"
 #include "Camera.h"
 #include "MeshRenderer.h"
+#include "Animator.h"
 
 
 
@@ -115,6 +116,13 @@ shared_ptr<MeshRenderer> GameObject::GetMeshRenderer()
 	return static_pointer_cast<MeshRenderer>(component);
 }
 
+shared_ptr<Animator> GameObject::GetAnimator()
+{
+	shared_ptr<Component> component = GetFixedComponent(ComponentType::Animator);
+
+	return static_pointer_cast<Animator>(component);
+}
+
 shared_ptr<Transform> GameObject::GetOrAddTransform()
 {
 	if (GetTransform() == nullptr)
@@ -139,8 +147,4 @@ void GameObject::AddComponent(shared_ptr<Component> component)
 	{
 		_scripts.push_back(dynamic_pointer_cast<MonoBehaviour>(component));
 	}
-}
-void GameObject::Render(shared_ptr<Pipeline> pipeline)
-{
-	GetMeshRenderer()->Render(pipeline);
 }

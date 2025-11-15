@@ -1,44 +1,43 @@
 #pragma once
 #include "Component.h"
+#include "Material.h"
+#include "Shader.h"
+
+class Mesh;
+class Material;
+
 class MeshRenderer : public Component
 {
 	using Super = Component;
 
 public:
 	MeshRenderer(ComPtr<ID3D11Device> device, ComPtr<ID3D11DeviceContext> deviceContext);
-	~MeshRenderer();
+	virtual ~MeshRenderer();
 
-	virtual void Update() override;
-	void Render(shared_ptr<Pipeline> pipeline);
+	void SetMaterial(shared_ptr<Material> material) { _material = material; }
+	void SetShader(shared_ptr<Shader> shader) { _material->SetShader(shader); }
+	void SetMesh(shared_ptr<Mesh> mesh) { _mesh = mesh; }
+	void SetTexture(shared_ptr<Texture> texture) { _material->SetTexture(texture); }
+
+
+	auto GetMaterial() { return _material; }
+	auto GetVertexShader() { return GetMaterial()->GetShader()->GetVertexShader(); }
+	auto GetInputLayout() { return GetMaterial()->GetShader()->GetInputLayout(); }
+	auto GetPixelShader() { return GetMaterial()->GetShader()->GetPixelShader(); }
+
+
+	shared_ptr<Mesh> GetMesh() { return _mesh; }
+	shared_ptr<Texture> GetTexture() { return GetMaterial()->GetTexture(); }
+
 
 private:
 	ComPtr<ID3D11Device> _device;
 
-	//// Mesh
-	shared_ptr<Geometry<VertexTextureData>> _geometry;
-	shared_ptr<VertexBuffer> _vertexBuffer;
-	shared_ptr<IndexBuffer> _indexBuffer;
+	friend class RenderManager;
 
-
-
-
-	////Material
-	shared_ptr<InputLayout> _inputLayout;
-	shared_ptr<VertexShader> _vertexShader;			// VS
-	shared_ptr<RasterizerState> _rasterizerState;	// RAS
-	shared_ptr<PixelShader> _pixelShader;			// PS
-	shared_ptr<Texture> _texture1;					// SRV
-	shared_ptr<SamplerState> _samplerState;
-	shared_ptr<BlendState> _blendState;
-
-
-private:
-	//SRT
-	CameraData _cameraData;
-	shared_ptr<ConstantBuffer<CameraData>> _cameraBuffer;
-	//SRT
-	TransformData _transformData;
-	shared_ptr<ConstantBuffer<TransformData>> _transformBuffer;
-
+	// Mesh
+	shared_ptr<Mesh> _mesh;
+	//Material
+	shared_ptr<Material> _material;
 };
 

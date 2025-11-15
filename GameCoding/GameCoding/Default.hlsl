@@ -27,11 +27,20 @@ cbuffer TransformData : register(b1)
     row_major matrix matWorld;
 }
 
+cbuffer AnimationData : register(b2)
+{
+    float2 spriteOffset;
+    float2 spriteSize;
+    float2 textureSize;
+    float useAnimation;
+}
+
 // IA -> VS(정점 작업) -> RS(보간 작업) -> PS -> OM
 VS_OUTPUT VS(VS_INPUT input)
 {
     VS_OUTPUT output;
     
+    // WVP
     float4 position = mul(input.position, matWorld); // 월드 좌표계로 변환
     position = mul(position, matView); // 뷰 좌표계로 변환
     position = mul(position, matProjection); // 투영 좌표계로 변환
@@ -41,6 +50,11 @@ VS_OUTPUT VS(VS_INPUT input)
     //output.color = input.color;
     output.uv = input.uv;
     
+    if (useAnimation == 1.0f)
+    {
+        output.uv *= spriteSize / textureSize;
+        output.uv += spriteOffset / textureSize;
+    }
     
     return output;
 }

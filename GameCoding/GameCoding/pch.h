@@ -42,10 +42,16 @@ using namespace Microsoft::WRL;
 
 #define CHECK(p)	assert(SUCCEEDED(p))
 
+#define		GAME	GGame
+#define		SCENE		GAME->GetSceneManager()
+#define		TIME		GAME->GetTimeManager()
+#define		INPUT		GAME->GetInputManager()
+#define		RESOURCES	GAME->GetResourceManager()
+#define		RENDER		GAME->GetRenderManager()
+
 
 // Engine
 #include "Graphics.h"
-
 // Engine - Pipelines - InputAssembler
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
@@ -55,17 +61,14 @@ using namespace Microsoft::WRL;
 #include "GeometryHelper.h"
 #include "VertexData.h"
 // Engine - Pipelines - Shaders
-#include "Shader.h"
+#include "ShaderBase.h"
 #include "ConstantBuffer.h"
 #include "Texture.h"
-
 #include "RasterizerState.h"
 #include "SamplerState.h"
 #include "BlendState.h"
-
+// Engine - Pipeline
 #include "Pipeline.h"
 
 // Engine - Game
 #include "Transform.h"
-#include "GameObject.h"
-#include "Component.h"
